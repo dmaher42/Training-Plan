@@ -1,0 +1,41 @@
+# Environment configuration files with sensitive data
+config.local.env
+config.*.env
+*.local.env
+
+# Database credentials
+.env
+.env.local
+.env.*.local
+
+# SQLcl history and logs
+*.log
+sql_history.xml
+.sqlcl/
+
+# Temporary files
+*.tmp
+*.swp
+*~
+.DS_Store
+
+# IDE and editor files
+.idea/
+.vscode/
+*.iml
+*.sublime-*
+
+# OS files
+Thumbs.db
+ehthumbs.db
+Desktop.ini
+
+# Backup files
+*.bak
+*.backup
+*_backup_*
+
+# Build artifacts
+dist/
+build/
+target/

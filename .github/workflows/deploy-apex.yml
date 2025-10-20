@@ -1,0 +1,142 @@
+name: Deploy APEX Application
+
+on:
+  push:
+    branches:
+      - main
+      - develop
+    paths:
+      - 'apex-apps/*.apx'
+  pull_request:
+    branches:
+      - main
+    paths:
+      - 'apex-apps/*.apx'
+  workflow_dispatch:
+    inputs:
+      environment:
+        description: 'Target environment'
+        required: true
+        default: 'dev'
+        type: choice
+        options:
+          - dev
+          - test
+          - prod
+      apx_file:
+        description: 'APX file to deploy (name only, e.g., training_plan_app.apx)'
+        required: true
+        default: 'training_plan_app.apx'
+
+jobs:
+  validate:
+    name: Validate APX Files
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v4
+
+      - name: Validate APX file syntax
+        run: |
+          echo "Validating APX files..."
+          for file in apex-apps/*.apx; do
+            if [ -f "$file" ]; then
+              echo "Checking $file..."
+              # Basic syntax validation - check if file contains APEX markers
+              if grep -q "wwv_flow_api" "$file"; then
+                echo "✓ $file appears to be a valid APX file"
+              else
+                echo "✗ $file does not appear to be a valid APX file"
+                exit 1
+              fi
+            fi
+          done
+
+      - name: List APX files
+        run: |
+          echo "Available APX files:"
+          ls -lh apex-apps/*.apx || echo "No APX files found"
+
+  deploy-dev:
+    name: Deploy to Development
+    runs-on: ubuntu-latest
+    needs: validate
+    if: github.event_name == 'push' && github.ref == 'refs/heads/develop'
+    environment: development
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v4
+
+      - name: Setup Oracle SQLcl
+        run: |
+          echo "Note: SQLcl installation would be configured here"
+          echo "For actual deployment, install SQLcl and configure database connection"
+
+      - name: Deploy to Development
+        env:
+          DB_HOST: ${{ secrets.DEV_DB_HOST }}
+          DB_PORT: ${{ secrets.DEV_DB_PORT }}
+          DB_SERVICE: ${{ secrets.DEV_DB_SERVICE }}
+          DB_USER: ${{ secrets.DEV_DB_USER }}
+          DB_PASSWORD: ${{ secrets.DEV_DB_PASSWORD }}
+          WORKSPACE: ${{ secrets.DEV_WORKSPACE }}
+        run: |
+          echo "Would deploy APX files to development environment"
+          # Uncomment when SQLcl is configured:
+          # ./scripts/deploy_apex.sh training_plan_app.apx dev
+
+  deploy-prod:
+    name: Deploy to Production
+    runs-on: ubuntu-latest
+    needs: validate
+    if: github.event_name == 'push' && github.ref == 'refs/heads/main'
+    environment: production
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v4
+
+      - name: Setup Oracle SQLcl
+        run: |
+          echo "Note: SQLcl installation would be configured here"
+          echo "For actual deployment, install SQLcl and configure database connection"
+
+      - name: Deploy to Production
+        env:
+          DB_HOST: ${{ secrets.PROD_DB_HOST }}
+          DB_PORT: ${{ secrets.PROD_DB_PORT }}
+          DB_SERVICE: ${{ secrets.PROD_DB_SERVICE }}
+          DB_USER: ${{ secrets.PROD_DB_USER }}
+          DB_PASSWORD: ${{ secrets.PROD_DB_PASSWORD }}
+          WORKSPACE: ${{ secrets.PROD_WORKSPACE }}
+        run: |
+          echo "Would deploy APX files to production environment"
+          # Uncomment when SQLcl is configured:
+          # ./scripts/deploy_apex.sh training_plan_app.apx prod
+
+  manual-deploy:
+    name: Manual Deployment
+    runs-on: ubuntu-latest
+    needs: validate
+    if: github.event_name == 'workflow_dispatch'
+    environment: ${{ github.event.inputs.environment }}
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v4
+
+      - name: Setup Oracle SQLcl
+        run: |
+          echo "Note: SQLcl installation would be configured here"
+          echo "For actual deployment, install SQLcl and configure database connection"
+
+      - name: Deploy APX File
+        env:
+          DB_HOST: ${{ secrets[format('{0}_DB_HOST', github.event.inputs.environment)] }}
+          DB_PORT: ${{ secrets[format('{0}_DB_PORT', github.event.inputs.environment)] }}
+          DB_SERVICE: ${{ secrets[format('{0}_DB_SERVICE', github.event.inputs.environment)] }}
+          DB_USER: ${{ secrets[format('{0}_DB_USER', github.event.inputs.environment)] }}
+          DB_PASSWORD: ${{ secrets[format('{0}_DB_PASSWORD', github.event.inputs.environment)] }}
+          WORKSPACE: ${{ secrets[format('{0}_WORKSPACE', github.event.inputs.environment)] }}
+        run: |
+          echo "Would deploy ${{ github.event.inputs.apx_file }} to ${{ github.event.inputs.environment }} environment"
+          # Uncomment when SQLcl is configured:
+          # ./scripts/deploy_apex.sh ${{ github.event.inputs.apx_file }} ${{ github.event.inputs.environment }}

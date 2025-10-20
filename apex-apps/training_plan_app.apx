@@ -1,0 +1,81 @@
+prompt --application/set_environment
+set define off verify off feedback off
+whenever sqlerror exit sql.sqlcode rollback
+--------------------------------------------------------------------------------
+--
+-- Oracle APEX export file
+--
+-- You should run this script using a SQL client connected to the database as
+-- the owner (parsing schema) of the application or as a database user with the
+-- APEX_ADMINISTRATOR_ROLE role.
+--
+-- This is a sample/placeholder APX file for the Training Plan application
+--
+-- Application ID: 100
+-- Application Name: Training Plan
+-- Date and Time: 2025-01-08 10:00:00
+-- Exported By: ADMIN
+-- Version: 21.2.0.00.20
+--
+--------------------------------------------------------------------------------
+
+prompt --application/create_application
+begin
+  -- Sample application metadata
+  wwv_flow_api.create_flow(
+    p_id => 100,
+    p_display_id => 100,
+    p_owner => 'APEX_USER',
+    p_name => 'Training Plan',
+    p_alias => 'TRAINING_PLAN',
+    p_page_view_logging => 'YES',
+    p_charset => 'utf-8',
+    p_step_template => 100,
+    p_max_session_length_sec => 28800,
+    p_deep_linking => 'NO',
+    p_checksum_salt => 'PLACEHOLDER_SALT',
+    p_bookmark_checksum_function => 'SH1',
+    p_compatibility_mode => '21.2',
+    p_flow_language => 'en',
+    p_flow_language_derived_from => 'FLOW_PRIMARY_LANGUAGE',
+    p_allow_feedback_yn => 'YES',
+    p_date_format => 'DD-MON-YYYY HH24:MI:SS',
+    p_timestamp_format => 'DS',
+    p_timestamp_tz_format => 'DS',
+    p_direction => 'LTR',
+    p_flow_image_prefix => '&APP_IMAGES.',
+    p_documentation_banner => '',
+    p_authentication => 'PLUGIN',
+    p_authentication_id => wwv_flow_api.id(101),
+    p_application_tab_set => 1,
+    p_logo_type => 'T',
+    p_logo_text => 'Training Plan',
+    p_proxy_server_address => '',
+    p_no_proxy_domains => '',
+    p_flow_version => 'Release 1.0',
+    p_flow_status => 'AVAILABLE_W_EDIT_LINK',
+    p_flow_unavailable_text => 'This application is currently unavailable.',
+    p_exact_substitutions_only => 'Y',
+    p_browser_cache => 'N',
+    p_browser_frame => 'D',
+    p_rejoin_existing_sessions => 'N',
+    p_csv_encoding => 'Y',
+    p_auto_time_zone => 'N',
+    p_substitution_string_01 => 'APP_NAME',
+    p_substitution_value_01 => 'Training Plan',
+    p_last_updated_by => 'ADMIN',
+    p_last_upd_yyyymmddhh24miss => '20250108100000',
+    p_file_prefix => '#APP_IMAGES#',
+    p_files_version => 1,
+    p_ui_type_name => 'DESKTOP',
+    p_print_server_type => 'NATIVE');
+end;
+/
+
+prompt --application/end_environment
+begin
+  wwv_flow_api.import_end(p_auto_install_sup_obj => nvl(wwv_flow_application_install.get_auto_install_sup_obj, false));
+  commit;
+end;
+/
+
